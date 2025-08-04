@@ -9,13 +9,16 @@ if TYPE_CHECKING:
 
 
 class PlaceRelationMixin:
+    _place_id_unique: bool = False
     _place_id_nullable: bool = False
+
     _place_back_populates: str | None = None
 
     @declared_attr
     def place_id(cls) -> Mapped[uuid.UUID]:
         return mapped_column(
             ForeignKey("places.id"),
+            unique=cls._place_id_unique,
             nullable=cls._place_id_nullable,
         )
 
