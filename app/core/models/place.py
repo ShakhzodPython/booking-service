@@ -1,20 +1,31 @@
 import uuid
 
-from enum import Enum
+from typing import TYPE_CHECKING
 
-from sqlalchemy import String, Enum as SqlEnum, Float, ForeignKey
+from sqlalchemy import String, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 from .mixins import TimeStampMixin, SoftDeleteMixin
 
 
-# str mixin allows storing values as strings
-class PlaceType(str, Enum):
-    HOTEL = "Hotel"
-    TOUR = "Tour"
-    APARTMENT = "Apartment"
-    COTTAGE = "Cottage"
+if TYPE_CHECKING:
+    from .place_service_association import PlaceServiceAssociation
+
+class PlaceType(
+    Base,
+    TimeStampMixin,
+    SoftDeleteMixin,
+):
+    title: Mapped[str] = mapped_column(String(100), unique=True)
+
+    places: Mapped[list["Place"]] = relationship(
+        back_populates="place_type",
+        cascade="all, delete",
+        # This setting tells SQLAlchemy not to issue a SQL DELETE or UPDATE on child rows (e.g., Place),
+        # when the parent (e.g., PlaceType) is deleted.
+        passive_deletes=True,
+    )
 
 
 class PlaceLocation(
@@ -39,6 +50,10 @@ class PlaceService(
 ):
     title: Mapped[str] = mapped_column(String(100))
 
+    place_service_associations: Mapped["PlaceServiceAssociation"] = relationship(
+        back_populates="place_service"
+    )
+
 
 class PlaceDetail(
     Base,
@@ -58,19 +73,25 @@ class Place(
         unique=True,
     )
 
-    location_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("place_locations.id", ondelete="CASCADE"), unique=True
+    place_type_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("place_types.id", ondelete="CASCADE")
     )
 
-    place_type: Mapped[PlaceType] = mapped_column(
-        SqlEnum(PlaceType, name="place_type_enum"),
+    location_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("place_locations.id", ondelete="CASCADE"), unique=True
     )
 
     location: Mapped["PlaceLocation"] = relationship(
         back_populates="place",
         # this means only one location per place
         uselist=False,
-        # If a related child object is no longer associated with a parent,
-        # it will be automatically deleted from the database
-        cascade="all, delete-orphan",
+        cascade="all, delete",
+    )
+
+    place_type: Mapped["PlaceType"] = relationship(
+        back_populates="places",
+    )
+
+    place_associations: Mapped[list["PlaceServiceAssociation"]] = relationship(
+        back_populates="place"
     )
