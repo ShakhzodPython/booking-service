@@ -2,16 +2,10 @@ __all__ = (
     "db_helper",
     "Base",
     "Place",
-    "PlaceImage",
     "PlaceLocation",
     "PlaceService",
 )
 
 from .db_helper import db_helper
 from .base import Base
-from .place import (
-    Place,
-    PlaceLocation,
-    PlaceService,
-    PlaceImage,
-)
+from .place import Place, PlaceLocation, PlaceService

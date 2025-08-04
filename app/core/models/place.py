@@ -20,6 +20,7 @@ class PlaceType(str, Enum):
 class PlaceLocation(
     Base,
     TimeStampMixin,
+    SoftDeleteMixin,
 ):
     longitude: Mapped[float] = mapped_column(Float(precision=8))
     latitude: Mapped[float] = mapped_column(Float(precision=8))
@@ -34,11 +35,16 @@ class PlaceLocation(
 class PlaceService(
     Base,
     TimeStampMixin,
+    SoftDeleteMixin,
 ):
     title: Mapped[str] = mapped_column(String(100))
 
 
-class PlaceDetail(Base):
+class PlaceDetail(
+    Base,
+    TimeStampMixin,
+    SoftDeleteMixin,
+):
     pass
 
 
